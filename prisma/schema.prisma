@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  accounts      Account[]
+  transactions  Transaction[]
+}
+
+model Account {
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plaidAccountId String?   @unique
+  plaidItemId    String?
+  accessToken    String?
+  name           String
+  officialName   String?
+  type           String
+  subtype        String?
+  mask           String?
+  balance        Float     @default(0)
+  currency       String    @default("CAD")
+  institution    String?
+  color          String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  transactions   Transaction[]
+}
+
+model Transaction {
+  id                 String   @id @default(cuid())
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId          String
+  account            Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  plaidTransactionId String?  @unique
+  name               String
+  amount             Float
+  date               DateTime
+  category           String?
+  subcategory        String?
+  pending            Boolean  @default(false)
+  createdAt          DateTime @default(now())
+}
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
